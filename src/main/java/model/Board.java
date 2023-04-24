@@ -23,6 +23,9 @@ public class Board {
           Pair.with(-1, 1),
           Pair.with(-1, 0));
 
+  public static final List<Pair<Integer, Integer>> CORNERS =
+      List.of(Pair.with(0, 0), Pair.with(0, 7), Pair.with(7, 0), Pair.with(7, 7));
+
   private final Square[][] squares;
 
   public Board() {
@@ -65,7 +68,11 @@ public class Board {
   }
 
   public Square getSquare(int row, int column) {
-    return squares[row][column];
+    if (row >= 0 && row < 8 && column >= 0 && column < 8) {
+      return squares[row][column];
+    } else {
+      return null;
+    }
   }
 
   public void setSquare(Square square, int row, int column) {

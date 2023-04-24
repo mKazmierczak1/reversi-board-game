@@ -16,8 +16,13 @@ public class AIOpponent {
 
   private final int player;
   private final int initialDepth;
+  private final Function<GameManager, Double> heuristic;
+  private final boolean shouldPrune;
+  private long sumMoveTime = 0;
+  private long movesCount = 0;
 
   public Pair<Integer, Integer> makeMove(Board board) {
+    var startTime = System.currentTimeMillis();
     var decision =
         miniMax(
             null,
@@ -26,10 +31,11 @@ public class AIOpponent {
             Double.MAX_VALUE,
             player,
             board,
-            gameManager -> {
-              var result = gameManager.getResult();
-              return (double) (result.getValue0() - result.getValue1());
-            });
+            heuristic,
+            shouldPrune);
+
+    sumMoveTime += System.currentTimeMillis() - startTime;
+    movesCount++;
 
     var decisionRow = decision.getValue1();
     var decisionColumn = decision.getValue2();
@@ -39,6 +45,10 @@ public class AIOpponent {
         : null;
   }
 
+  public long getAvgMoveTime() {
+    return sumMoveTime / movesCount;
+  }
+
   private Triplet<Double, Integer, Integer> miniMax(
       Pair<Integer, Integer> move,
       int depth,
@@ -46,7 +56,8 @@ public class AIOpponent {
       double beta,
       int player,
       Board board,
-      Function<GameManager, Double> heuristic) {
+      Function<GameManager, Double> heuristic,
+      boolean shouldPrune) {
     var copiedBoard = new Board(copyBoard(board.getBoard()));
     var gameManager = new GameManager(copiedBoard, player);
     copiedBoard.prepareBoardForNextTurn();
@@ -74,14 +85,25 @@ public class AIOpponent {
         int nextPlayer = game.nextTurn(possibleMove);
 
         double eval =
-            miniMax(possibleMove, depth - 1, alpha, beta, nextPlayer, game.getBoard(), heuristic)
+            miniMax(
+                    possibleMove,
+                    depth - 1,
+                    alpha,
+                    beta,
+                    nextPlayer,
+                    game.getBoard(),
+                    heuristic,
+                    shouldPrune)
                 .getValue0();
         maxEval = max(eval, maxEval);
         bestMove = maxEval == eval ? possibleMove : bestMove;
-        alpha = max(alpha, eval);
 
-        if (beta <= alpha) {
-          break;
+        if (shouldPrune) {
+          alpha = max(alpha, eval);
+
+          if (beta <= alpha) {
+            break;
+          }
         }
       }
 
@@ -97,14 +119,25 @@ public class AIOpponent {
         int nextPlayer = game.nextTurn(possibleMove);
 
         double eval =
-            miniMax(possibleMove, depth - 1, alpha, beta, nextPlayer, game.getBoard(), heuristic)
+            miniMax(
+                    possibleMove,
+                    depth - 1,
+                    alpha,
+                    beta,
+                    nextPlayer,
+                    game.getBoard(),
+                    heuristic,
+                    shouldPrune)
                 .getValue0();
         minEval = min(eval, minEval);
         bestMove = minEval == eval ? possibleMove : bestMove;
-        beta = min(beta, eval);
 
-        if (beta <= alpha) {
-          break;
+        if (shouldPrune) {
+          beta = min(beta, eval);
+
+          if (beta <= alpha) {
+            break;
+          }
         }
       }
 

@@ -1,6 +1,7 @@
 package game;
 
 import ai.AIOpponent;
+import ai.Heuristics;
 import java.util.Scanner;
 import lombok.RequiredArgsConstructor;
 import org.javatuples.Pair;
@@ -27,7 +28,7 @@ public class GameConsoleClient {
   }
 
   public void singlePlayerGameLoop() {
-    var ai = new AIOpponent(2, 1);
+    var ai = new AIOpponent(2, AIMoveDepth, Heuristics::naiveStrategy, true);
     int player = 1;
 
     do {
@@ -48,8 +49,8 @@ public class GameConsoleClient {
   }
 
   public void AIBattleGameLoop() {
-    var aiBlack = new AIOpponent(1, AIMoveDepth);
-    var aiWhite = new AIOpponent(2, AIMoveDepth);
+    var aiBlack = new AIOpponent(1, AIMoveDepth, Heuristics::edgesStrategy, true);
+    var aiWhite = new AIOpponent(2, AIMoveDepth, Heuristics::reverseNaiveStrategy, true);
     int player = 1;
 
     do {
@@ -73,13 +74,15 @@ public class GameConsoleClient {
     } while (player != 0);
 
     printResult(gameManager);
+    System.out.printf("AI Black avgMoveTimes: %s ms\n", aiBlack.getAvgMoveTime());
+    System.out.printf("AI White avgMoveTimes: %s ms\n", aiWhite.getAvgMoveTime());
   }
 
   private void printResult(GameManager gameManager) {
     var gameResult = gameManager.getResult();
     System.out.println(gameManager.getBoardToPrint());
     System.out.printf(
-        "Game result: \nPlayer 1 - %s \nPlayer 2 - %s",
+        "Game result: \nPlayer 1 - %s \nPlayer 2 - %s\n",
         gameResult.getValue0(), gameResult.getValue1());
   }
 

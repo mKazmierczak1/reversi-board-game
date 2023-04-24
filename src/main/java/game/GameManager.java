@@ -58,16 +58,6 @@ public class GameManager {
   }
 
   public boolean isGameFinished() {
-    //    if (doesPlayerHasNoPossibleMoves(1)) {
-    //      System.out.println("Player 1 without moves");
-    //    }
-    //    if (doesPlayerHasNoPossibleMoves(2)) {
-    //      System.out.println("Player 2 without moves");
-    //    }
-    //    if (isBoardFull()) {
-    //      System.out.println("Board is full");
-    //    }
-
     return isBoardFull() || (doesPlayerHasNoPossibleMoves(1) && doesPlayerHasNoPossibleMoves(2));
   }
 
@@ -99,6 +89,52 @@ public class GameManager {
         });
 
     return possibleMoves;
+  }
+
+  public Pair<Integer, Integer> getCornerSquaresCount() {
+    int countBlacks = 0;
+    int countWhites = 0;
+
+    for (var corner : Board.CORNERS) {
+      var square = board.getSquare(corner.getValue0(), corner.getValue1());
+
+      if (square == Square.BLACK) {
+        countBlacks++;
+      } else if (square == Square.WHITE) {
+        countWhites++;
+      }
+    }
+
+    return Pair.with(countBlacks, countWhites);
+  }
+
+  public Pair<Integer, Integer> getEdgeSquaresCount() {
+    var edges = List.of(0, 7);
+    int countBlacks = 0;
+    int countWhites = 0;
+
+    for (var edge : edges) {
+      for (int i = 1; i < 7; i++) {
+        var squareRow = board.getSquare(edge, i);
+        var squareColumn = board.getSquare(i, edge);
+
+        if (squareRow == Square.BLACK) {
+          countBlacks++;
+        } else if (squareRow == Square.WHITE) {
+          countWhites++;
+        }
+
+        if (squareColumn == Square.BLACK) {
+          countBlacks++;
+        } else if (squareColumn == Square.WHITE) {
+          countWhites++;
+        }
+      }
+
+      return Pair.with(countBlacks, countWhites);
+    }
+
+    return Pair.with(countBlacks, countWhites);
   }
 
   private boolean isBoardFull() {
