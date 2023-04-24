@@ -51,7 +51,17 @@ public class AIOpponent {
     var gameManager = new GameManager(copiedBoard, player);
     copiedBoard.prepareBoardForNextTurn();
 
-    if (depth == 0 || gameManager.isGameFinished()) {
+    if (gameManager.isGameFinished()) {
+      var result = gameManager.getResult();
+      return (Triplet.with(
+          result.getValue0() - result.getValue1() > 0
+              ? Double.MAX_VALUE
+              : result.getValue0() - result.getValue1() < 0 ? -Double.MAX_VALUE : 0,
+          move.getValue0(),
+          move.getValue1()));
+    }
+
+    if (depth == 0) {
       return (Triplet.with(heuristic.apply(gameManager), move.getValue0(), move.getValue1()));
     }
 
