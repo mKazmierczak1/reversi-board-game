@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import lombok.RequiredArgsConstructor;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
+@RequiredArgsConstructor
 public class Board {
 
   public static final int BOARD_SIZE = 8;

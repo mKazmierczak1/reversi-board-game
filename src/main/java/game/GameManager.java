@@ -17,7 +17,17 @@ public class GameManager {
     highlightPossibleMoves();
   }
 
+  public GameManager(Board board, int playerTurn) {
+    this.board = board;
+    this.playerTurn = playerTurn;
+    highlightPossibleMoves();
+  }
+
   public int nextTurn(String move) {
+    return nextTurn(extractSquareNumber(move));
+  }
+
+  public int nextTurn(Pair<Integer, Integer> move) {
     makeMove(move);
     changePlayerTurn();
 
@@ -36,19 +46,59 @@ public class GameManager {
     return Pair.with(board.countSquares(Square.BLACK), board.countSquares(Square.WHITE));
   }
 
-  private void makeMove(String move) {
-    var squareNumber = extractSquareNumber(move);
+  public Board getBoard() {
+    return board;
+  }
 
-    if (board.getSquare(squareNumber.getValue0(), squareNumber.getValue1())
-        == Square.POSSIBLE_MOVE) {
-      board.setSquare(
-          Square.forNumber(playerTurn), squareNumber.getValue0(), squareNumber.getValue1());
-      evaluateMove(squareNumber.getValue0(), squareNumber.getValue1());
+  private void makeMove(Pair<Integer, Integer> move) {
+    if (board.getSquare(move.getValue0(), move.getValue1()) == Square.POSSIBLE_MOVE) {
+      board.setSquare(Square.forNumber(playerTurn), move.getValue0(), move.getValue1());
+      evaluateMove(move.getValue0(), move.getValue1());
     }
   }
 
-  private boolean isGameFinished() {
+  public boolean isGameFinished() {
+    //    if (doesPlayerHasNoPossibleMoves(1)) {
+    //      System.out.println("Player 1 without moves");
+    //    }
+    //    if (doesPlayerHasNoPossibleMoves(2)) {
+    //      System.out.println("Player 2 without moves");
+    //    }
+    //    if (isBoardFull()) {
+    //      System.out.println("Board is full");
+    //    }
+
     return isBoardFull() || (doesPlayerHasNoPossibleMoves(1) && doesPlayerHasNoPossibleMoves(2));
+  }
+
+  public List<Pair<Integer, Integer>> getPossibleMoves(int playerTurn) {
+    var playerSquareType = Square.forNumber(playerTurn);
+    var opponentSquareType = Square.forNumber(getOtherPlayer(playerTurn));
+    var potentialMoves = board.getPotentialMoves(opponentSquareType);
+    var possibleMoves = new ArrayList<Pair<Integer, Integer>>();
+
+    potentialMoves.forEach(
+        move -> {
+          for (var direction : Board.DIRECTIONS) {
+            var line =
+                board.getLine(
+                    move.getValue0(),
+                    move.getValue1(),
+                    direction.getValue0(),
+                    direction.getValue1());
+
+            if (line.isEmpty()) {
+              continue;
+            }
+
+            if (getScore(line, playerSquareType, opponentSquareType) != 0) {
+              possibleMoves.add(move);
+              break;
+            }
+          }
+        });
+
+    return possibleMoves;
   }
 
   private boolean isBoardFull() {
@@ -94,36 +144,6 @@ public class GameManager {
         }
       }
     }
-  }
-
-  private ArrayList<Pair<Integer, Integer>> getPossibleMoves(int playerTurn) {
-    var playerSquareType = Square.forNumber(playerTurn);
-    var opponentSquareType = Square.forNumber(getOtherPlayer(playerTurn));
-    var potentialMoves = board.getPotentialMoves(opponentSquareType);
-    var possibleMoves = new ArrayList<Pair<Integer, Integer>>();
-
-    potentialMoves.forEach(
-        move -> {
-          for (var direction : Board.DIRECTIONS) {
-            var line =
-                board.getLine(
-                    move.getValue0(),
-                    move.getValue1(),
-                    direction.getValue0(),
-                    direction.getValue1());
-
-            if (line.isEmpty()) {
-              continue;
-            }
-
-            if (getScore(line, playerSquareType, opponentSquareType) != 0) {
-              possibleMoves.add(move);
-              break;
-            }
-          }
-        });
-
-    return possibleMoves;
   }
 
   private int getScore(
